@@ -1,0 +1,31 @@
+/target
+**/*.rs.bk
+Cargo.lock.bak
+
+# build outputs
+*.ptx
+*.cubin
+*.fatbin
+
+# profiles
+*.nsys-rep
+*.ncu-rep
+*.qdrep
+*.sqlite
+
+# model weights and reference dumps (keep out of git)
+/models/
+*.safetensors
+*.bin
+*.pt
+/tools/reference/out/
+
+# python
+__pycache__/
+.venv/
+
+# bench raw output (summaries go in docs/results.md)
+/bench-results/
+
+.DS_Store
+.claude/settings.local.json
