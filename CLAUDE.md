@@ -30,7 +30,9 @@ crates/
 tools/
   reference/   Python scripts that dump HF transformers logits and hidden states for comparison
 docs/
-  decisions/   one ADR per non-obvious decision (see template)
+  process.md   the per-PR workflow
+  plans/       one approved plan per PR
+  decisions/   ADRs for durable decisions (criteria in its README)
   grill-log.md record of every grilling session
   results.md   benchmark results log, one row per measured change
 ```
@@ -90,11 +92,12 @@ Fill in exact binary names and flags as they come to exist. Keep this section ac
 
 ## Decisions
 
-Any choice someone could reasonably question gets an ADR in `docs/decisions/` using the template: context, options, decision, evidence, consequences. If Claude notices an undocumented decision in a diff, it asks for an ADR before approving.
+Every decision is recorded somewhere. Most go in the PR's plan doc (`docs/plans/`). Ones that later PRs depend on, that someone would reasonably question, or that are expensive to reverse get an ADR in `docs/decisions/` (criteria in its README). If Claude notices a decision in a diff that isn't recorded in either place, it raises it before approving.
 
 Settled so far (update as ADRs land):
 
 - Model: _TBD (leaning Llama 3.2 1B)_
+- Backend: CPU-first behind a backend trait; CUDA backend added when the NVIDIA card arrives (~2026-11-30). The CPU backend stays as the kernel reference. AMD card unused. ([ADR 0001](docs/decisions/0001-cpu-first-backend.md))
 - Kernels: CUDA C++ compiled to PTX in build.rs, launched from Rust _(confirm in ADR)_
 - GEMM: cuBLAS _(own GEMM as a side exercise only)_
 
@@ -109,7 +112,7 @@ Log grills and gates in `docs/grill-log.md`: date, scope, questions missed, foll
 
 ## Milestones
 
-Update the status as you go.
+Update the status as you go. Order per ADR 0001: M0 and M2 run on CPU, then M1 once the NVIDIA card arrives. Weeks are estimates, not deadlines. Apply for jobs once the interview-ready bar is met: M0–M3 on NVIDIA, with vLLM numbers and gates passed.
 
 | Milestone | Weeks | Gate | Status |
 | --- | --- | --- | --- |
