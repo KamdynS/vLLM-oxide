@@ -1,14 +1,9 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+//! Inference engine: model loading, forward pass, KV cache, scheduler.
+//!
+//! So far: the model config and weight loading (M0 PR1).
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub mod config;
+pub mod weights;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub use config::{DType, LLAMA_3_2_1B, ModelConfig, RopeScaling};
+pub use weights::{LayerWeights, LoadError, ModelWeights, Weight};

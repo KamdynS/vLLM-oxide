@@ -5,10 +5,11 @@ Claude writes most of the code. The owner decides, reviews, and must be able to 
 ## The loop (every PR)
 
 1. **Plan mode.** Every PR starts in Claude Code plan mode. No code is written until the plan is approved.
-2. **Grill the plan (`/grill-me`).** Claude interviews the owner in rounds over the design tree: each round asks every question whose prerequisites are settled, with Claude's recommended answer. Facts (hardware specs, model config, what the code currently does) are Claude's job to look up; decisions are the owner's. Done when nothing is left silently assumed.
+2. **Grill the plan (`/grill-me`).** Claude interviews the owner in rounds over the **architecture** decisions (see [What gets grilled](#what-gets-grilled)), each with Claude's recommended answer. Facts (hardware specs, model config, what the code currently does) are Claude's job to look up. Architecture decisions are the owner's. Plumbing decisions are Claude's, listed in the plan. Done when no architecture decision is left silently assumed.
 3. **Write the plan.** Claude writes the plan with these sections:
    - **Goal**: what this PR changes and why now.
    - **Design**: the decisions from the grill, with the reasoning.
+   - **Claude's defaults**: every plumbing decision Claude made, one line each with a reason. The owner strikes or changes any of them in review; silence means accepted.
    - **Authorship**: which files Claude writes and which the owner writes.
    - **Tests**: what proves it's correct, written before the code.
    - **Measurement**: what gets recorded in `docs/results.md`, if anything.
@@ -19,7 +20,17 @@ Claude writes most of the code. The owner decides, reviews, and must be able to 
 7. **Comprehension check (`/explain`).** Before the PR opens, Claude picks the 3–5 places in the diff most likely to hide a misunderstanding (`unsafe`, index math, constants, sync points, KV ownership) and the owner explains them. No hints, no recommended answers. Gaps become fixes, comments, tests, or follow-up tasks.
 8. **PR and merge.** The PR description includes the authorship and what the owner explained (see below).
 
-Small mechanical PRs (formatting, dependency bumps, typo fixes) may skip steps 2 and 7. Say so in the PR.
+Small mechanical PRs (formatting, dependency bumps, typo fixes) and plumbing-only PRs (loading, build setup, glue with no architecture decision) may skip steps 2 and 7. Say so in the PR.
+
+## What gets grilled
+
+The grill exists so the owner designs the system, not so they sign off on file paths.
+
+- **Architecture only.** A question is asked only if its answer changes serving behavior, performance or memory, or an interface another component depends on, *or* a senior inference engineer would plausibly ask it in an interview. Examples: the backend trait boundary, KV layout, who owns memory, prefill vs decode paths, GPU sync points, scheduling policy.
+- **Claude decides plumbing without asking.** File locations, dependencies, fixtures, crate housekeeping, test mechanics, naming and error types go in the plan's **Claude's defaults** list, not the grill.
+- **Testing is not a grill topic.** CLAUDE.md sets the bar; Claude meets it.
+- **Teach, then ask.** Every question opens with 2–4 plain-English sentences: what the thing is and why it matters for serving. Then it asks one real question, ending in "?". Define jargon the first time it appears.
+- **At most 4 questions per round**, ordered by how much the answer shapes the system.
 
 ## Who writes what
 

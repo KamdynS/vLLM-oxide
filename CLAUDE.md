@@ -44,9 +44,12 @@ Layout is a starting point. Changing it is a decision and gets an ADR.
 ```bash
 cargo build --release
 cargo test --workspace                     # unit + property tests
+cargo test -p engine --release -- --ignored # real-model tests; need models/Llama-3.2-1B (or $LLAMA_DIR)
 cargo test -p kernels -- --test-threads=1  # kernel tests share the GPU
 cargo clippy --workspace -- -D warnings
 cargo fmt --all
+
+nix shell nixpkgs#time -c time -v target/release/examples/load_weights models/Llama-3.2-1B   # load time + peak RSS (NixOS has no /usr/bin/time)
 
 compute-sanitizer --tool memcheck target/release/<test-binary>   # every kernel change
 nsys profile -o prof target/release/engine-bench ...              # timeline
@@ -96,7 +99,7 @@ Every decision is recorded somewhere. Most go in the PR's plan doc (`docs/plans/
 
 Settled so far (update as ADRs land):
 
-- Model: _TBD (leaning Llama 3.2 1B)_
+- Model: Llama 3.2 1B base ([ADR 0002](docs/decisions/0002-model-llama-3.2-1b.md))
 - Backend: CPU-first behind a backend trait; CUDA backend added when the NVIDIA card arrives (~2026-11-30). The CPU backend stays as the kernel reference. AMD card unused. ([ADR 0001](docs/decisions/0001-cpu-first-backend.md))
 - Kernels: CUDA C++ compiled to PTX in build.rs, launched from Rust _(confirm in ADR)_
 - GEMM: cuBLAS _(own GEMM as a side exercise only)_
@@ -105,7 +108,7 @@ Settled so far (update as ADRs land):
 
 Two kinds of questioning, kept separate:
 
-- **Planning (`/grill-me`)**: before every PR, in plan mode. Rounds of questions with Claude's recommended answers; the owner decides. Grill like a skeptical senior inference engineer: arithmetic intensity, bytes moved, failure modes, why not the alternative, what happens under memory pressure. Push for numbers.
+- **Planning (`/grill-me`)**: before every PR, in plan mode. Rounds of questions with Claude's recommended answers; the owner decides. Grill like a skeptical senior inference engineer: arithmetic intensity, bytes moved, failure modes, why not the alternative, what happens under memory pressure. Push for numbers. **Architecture questions only, taught before asked, at most 4 per round; Claude decides plumbing and lists it as "Claude's defaults"** ([rules](docs/process.md#what-gets-grilled)).
 - **Comprehension (`/explain`, `/gate`)**: one question at a time, no hints or recommended answers. `/explain <path>` before every PR; `/gate M<n>` at each milestone (see `.claude/commands/gate.md`).
 
 Log grills and gates in `docs/grill-log.md`: date, scope, questions missed, follow-ups. Missed questions become tasks or ADRs. Durable decisions from a grill get an ADR, drafted by Claude from the owner's answers.
