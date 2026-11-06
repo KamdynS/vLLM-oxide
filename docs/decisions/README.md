@@ -21,12 +21,13 @@ Copy `0000-template.md` to `NNNN-short-title.md`, numbered in order. Claude draf
 | # | Decision | Status | Plan |
 | --- | --- | --- | --- |
 | [0001](0001-cpu-first-backend.md) | CPU-first backend trait; CUDA deferred until NVIDIA card; milestone reorder | Accepted | — |
+| [0002](0002-model-llama-3.2-1b.md) | Serve Llama 3.2 1B (base) | Accepted | [0001](../plans/0001-config-and-weights.md) |
 
 ## Known forks (starting point, not a complete list)
 
 These are the big architectural forks from the original project plan. Each milestone's first grill maps that milestone's full decision tree, and this list gets replaced as it does.
 
-- **M0:** model (Llama 3.2 1B vs Qwen2.5 0.5B/1.5B vs TinyLlama); kernel language (CUDA C++ via nvcc vs Rust-on-GPU vs Triton); CUDA bindings (cudarc vs bindgen over the driver API)
+- **M0:** ~~model~~ (settled: ADR 0002); kernel language (CUDA C++ via nvcc vs Rust-on-GPU vs Triton); CUDA bindings (cudarc vs bindgen over the driver API)
 - **M1:** GEMM (cuBLAS vs own)
 - **M2:** KV block size; preemption (recompute vs swap)
 - **M3:** sampling location (GPU vs CPU)
