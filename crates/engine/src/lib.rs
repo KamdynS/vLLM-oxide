@@ -1,7 +1,8 @@
 //! Inference engine: model loading, forward pass, KV cache, scheduler.
 //!
-//! So far: the model config and weight loading (M0 PR1).
+//! So far: config and weights (M0 PR1); paged KV addressing (M0 PR2).
 
+pub mod backend;
 pub mod config;
 pub mod weights;
 
