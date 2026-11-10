@@ -1,8 +1,9 @@
 //! Inference engine: model loading, forward pass, KV cache, scheduler.
 //!
 //! So far: config and weights (M0 PR1); paged KV addressing, the backend
-//! trait and the engine error type (M0 PR2).
+//! trait, the engine error type and the activation arena (M0 PR2).
 
+pub mod arena;
 pub mod backend;
 pub mod config;
 pub mod error;

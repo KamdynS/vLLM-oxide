@@ -2,6 +2,47 @@
 
 One entry per grilling session, newest first. Missed questions become tasks or ADRs before the next session.
 
+### 2026-11-10: code walkthrough, M0 PR2 commit 3 (`arena.rs`, `arena/ops.rs`)
+
+- **Result:** Pass with follow-ups. Took three sessions. After the first read the owner said "I read the code, but I still don't _really_ understand it", so Claude rebuilt the arena from scratch in stages (Vec per op → one buffer + offsets → rewind → closure scopes → lifetime branding → nesting → in-place ops → arena id), each stage fixing the previous stage's bug. That landed.
+- **Owner's review changes:**
+  - "Why are we doing all the math from here downward in arena.rs?" The ops do no math, but the file mixed two ideas. Split into `arena.rs` (memory) and `arena/ops.rs` (the safe op API and the SAFETY block). It's a child module so `alloc` and `region` stay private.
+  - Flagged a self-referential module doc. Replaced with a "Using it" paragraph.
+  - Asked about `Option<RefCell<...>>`. Answer added as a field doc comment.
+  - Asked whether every op really needs `unsafe`. Answer: unsafe is unavoidable at the device boundary; the design question is how small the trusted region is. Considered: safe trait ops with runtime overlap checks in every backend (cheap, but duplicated per backend, and it only moves the unsafe down a layer).
+- **Answered well:**
+  - Writing into `residual` from a block scope survives the rewind: its region is below the block's mark, and a rewind only frees what's above.
+  - `Cell` despite `Arena::scope(&mut self)`: scopes hold the arena by `&`, so `top` needs interior mutability, and `Cell` suffices for a `usize`.
+  - After the re-explanation, in their own words: "The stricter we have our borrow checker, the easier our code is."
+- **Missed or shaky:**
+  - **Overlap: what keeps fresh outputs and in-place ops from aliasing.** Didn't know at first. After teaching, said `Clone` would allow two handles but didn't name the in-place op as where it breaks. Answer: fresh outputs come from `top`, above every live tensor. In-place ops take `&mut Tensor`, and `Tensor` isn't `Clone`, so one region has one handle.
+  - **Outer scope allocating inside an inner scope.** Didn't know. Answer: `Scope::scope(&mut self)` borrows the outer scope for the whole closure. Otherwise the inner rewind would free the outer allocation.
+  - **`normed` moved to the step scope "to save memory."** Said it wouldn't compile because `residual` needs `&mut`. It compiles; the borrows don't overlap in time. Answer: it leaks. A bump arena only frees on rewind, so 16 dead `normed`s pile up (`ArenaExhausted` at T = 2048). The rewind is already the reuse: each layer's `normed` lands on the same offset.
+  - **Capacity vs workspace (promise 1).** Pointed at `alloc`'s check, which compares against the arena's own `capacity`, and said `region` checks bounds (it checks arena identity). Answer: nothing compared the two numbers; it was a convention in `Llama::new`.
+- **Design change from the quiz:** `Arena::new(&backend)` now reads the capacity from `backend.workspace_elems()`, so "capacity == workspace" holds by construction. A `debug_assert` in `Arena::scope` catches a mismatched backend.
+- **Process note:** the owner said "I never could have written this", which feels strange. We discussed reading vs producing. Offered an optional "rebuild it from memory" step for new core concepts (arena, paged attention, CUDA kernels, scheduler). The owner kept the current loop for now because interview prep is the priority, and may do hard small projects in free time.
+- **Follow-ups:**
+  - [ ] `/gate M0`: re-ask "where is each of the three unsafe promises kept?" cold.
+  - [ ] `/gate M0`: re-ask "a tensor goes out of use in a bump arena: when is its memory reused?"
+
+### 2026-11-07: code walkthrough, M0 PR2 commit 2 (`backend/mod.rs`, `error.rs`)
+
+- **Result:** Pass with follow-ups.
+- **Owner's review change:** asked "should we have errors.rs?". That led to renaming `BackendError` → `EngineError`, since half its variants weren't backend errors.
+- **Answered well:**
+  - The trait doesn't prevent overlapping regions; the caller is trusted.
+  - `argmax` returns to the engine and everything else stays on the device, so data isn't moved twice.
+  - `write_kv` needs `&mut` because it writes the pool.
+  - After correction, restated in their own words: "The engine decides the block, the backend stores the numbers."
+- **Missed or shaky:**
+  - **The unsafe contract.** Called it "standard bound checks". Answer: bounds is the easy promise (the CPU backend re-checks it). The key promise is no overlap between input and output regions, which no bounds check catches.
+  - **Cost of `rmsnorm` returning a `Vec` on GPU.** Got the round trip, missed the sync. Answer: the CPU must wait for all queued GPU work before reading. That would happen 33 times per step instead of once, leaving the GPU idle in between (assessment Q9b).
+  - **Pool vs prefix cache.** Said "prefill uses the prefix cache, which is immutable". Answer: prefill reads the KV pool (all KV memory, including keys written earlier in the same step). The prefix cache (M4) is a reuse policy over blocks in that same pool.
+  - **Why `KvPool` is an associated type.** Said "the engine isn't the one who manages paged attention", which is backwards, and a repeat of grill Q2. Answer: the engine manages paging (tables, allocation). The backend stores the bytes, which on CUDA are device memory the engine can't touch. The OS analogy landed: kernel page tables vs RAM chips.
+- **Follow-ups:**
+  - [ ] Bookkeeping vs bytes has now been missed twice. `/gate M0` must re-ask it cold.
+  - [ ] Pool vs prefix cache: revisit in the M4 grill.
+
 ### 2026-11-07: code walkthrough, M0 PR2 commit 1 (`backend/paged.rs`)
 
 - **Result:** Pass with follow-ups. The owner read sections 3–4 of the PagedAttention paper first.
