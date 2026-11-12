@@ -1,0 +1,6 @@
+# Build for this machine's CPU so the CPU backend's dot product can use
+# AVX-512 (Ryzen 7700X, Zen 4). Without it, x86-64 defaults to SSE2 and the
+# 16-lane accumulator in backend/cpu/mod.rs::dot runs ~4× narrower.
+# The binary is then not portable to older CPUs; this is a single-box project.
+[build]
+rustflags = ["-C", "target-cpu=native"]

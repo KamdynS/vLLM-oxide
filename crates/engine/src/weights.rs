@@ -24,6 +24,11 @@ pub struct Weight {
 }
 
 impl Weight {
+    /// Build a weight from raw data. Used by tests to make small random models.
+    /// Fails if `data.len()` doesn't match the product of `shape`.
+    pub fn new(shape: Vec<usize>, data: Vec<f32>) -> Option<Self> {
+        (shape.iter().product::<usize>() == data.len()).then_some(Weight { shape, data })
+    }
     pub fn shape(&self) -> &[usize] {
         &self.shape
     }

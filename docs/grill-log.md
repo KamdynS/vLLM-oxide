@@ -2,6 +2,15 @@
 
 One entry per grilling session, newest first. Missed questions become tasks or ADRs before the next session.
 
+### 2026-11-11: code walkthrough, M0 PR2 commit 5 (CPU backend; `attention.rs` read closely)
+
+- **Result:** Pass. The owner read `attention.rs` and found it straightforward. Matmul and dot internals were skimmed by agreement: they're CPU-only.
+- **Answered well:**
+  - What stops a prefill query seeing later tokens' keys when they're all already in the pool: `row_num_keys` limits the loop to position + 1 keys. Causality comes from which keys are visited (set in `PrefillMeta`), not a mask.
+  - Why GQA (32 query heads share 8 KV heads): a smaller KV cache, so more sequences fit. Added: each decode step also reads 4× fewer KV bytes, which matters once KV traffic approaches weight traffic.
+- **Follow-ups:**
+  - [ ] Read the FlashAttention paper before M1. Our two-pass softmax is the reference; the online softmax is the kernel.
+
 ### 2026-11-11: code walkthrough, M0 PR2 commit 4 (`model.rs`, ADR 0004)
 
 - **Result:** Pass with follow-ups.

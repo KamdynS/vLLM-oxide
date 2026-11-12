@@ -18,6 +18,7 @@
 //! caller that an output never overlaps an input. `arena::Scope` is the only
 //! caller and guarantees it; see the SAFETY comment there.
 
+pub mod cpu;
 pub mod paged;
 
 pub use crate::error::{EngineError, Result};
