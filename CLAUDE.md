@@ -13,7 +13,7 @@ Claude writes most of the code. The owner decides, reviews, and must understand 
 - **Follow the PR loop in [`docs/process.md`](docs/process.md).** Plan mode → `/grill-me` → plan → plannotator plan review → implement → `/plannotator-review` → `/explain` → PR.
 - **Authorship is decided in the plan and recorded in the PR.** The owner may take any file; Claude writes the rest. Never blur who wrote what.
 - **Explain before editing.** For any non-trivial change, state the problem, the options, and the recommended choice before touching code.
-- **No unexplained magic numbers.** Every constant (block size, tile size, thread count, tolerance, chunk size) gets a comment saying where it came from: a measurement, a hardware limit, or a placeholder marked `// TODO(measure)`.
+- **No unexplained magic numbers.** Every constant (block size, tile size, thread count, tolerance, chunk size) gets a comment saying where it came from: a measurement, a hardware limit, or a placeholder marked `// TODO(M<n>): measure ...`, where the parentheses say when it gets done (a milestone), or `TODO(Kamdyn)` if no milestone owns it.
 - **Don't copy from vLLM / SGLang / nano-vllm.** Design from first principles in the grill; compare against them afterward and record the comparison.
 - **Push back.** If the owner's design is wrong or will not scale, say so directly with the reason. Agreement is not the job.
 - **Call out rubber-stamping.** If the owner approves core code without engaging, ask a comprehension question before moving on.
@@ -55,7 +55,9 @@ compute-sanitizer --tool memcheck target/release/<test-binary>   # every kernel 
 nsys profile -o prof target/release/engine-bench ...              # timeline
 ncu --set full -k <kernel_name> target/release/<binary>           # single-kernel deep dive
 
-python tools/reference/dump_logits.py --model <path> --prompts tools/reference/prompts.jsonl
+nix-shell tools/reference/shell.nix --run "python tools/reference/dump_logits.py --model models/Llama-3.2-1B --prompts tools/reference/prompts.jsonl"   # HF ground truth -> tools/reference/out/
+cargo test -p engine --release --test hf_match -- --ignored --nocapture   # M0 gate: greedy == HF, 256 tokens x 20 prompts
+cargo run --release -p engine --example generate -- models/Llama-3.2-1B "prompt" [max_new] [--profile]   # tok/s, arena peak, per-op times
 ```
 
 Fill in exact binary names and flags as they come to exist. Keep this section accurate.
@@ -103,6 +105,8 @@ Settled so far (update as ADRs land):
 - Backend: CPU-first behind a backend trait; CUDA backend added when the NVIDIA card arrives (~2026-11-30). The CPU backend stays as the kernel reference. AMD card unused. ([ADR 0001](docs/decisions/0001-cpu-first-backend.md))
 - Kernels: CUDA C++ compiled to PTX in build.rs, launched from Rust _(confirm in ADR)_
 - GEMM: cuBLAS _(own GEMM as a side exercise only)_
+- Backend trait: op-level, opaque tensors; backend owns KV bytes, engine owns block tables; activations from a per-step arena; argmax is the only sync ([ADR 0003](docs/decisions/0003-backend-trait-and-memory.md))
+- Prefill and decode are separate paths over a paged-KV interface (block size 16, placeholder); prefill takes batched sequences with `context_len`; LM head on last token only ([ADR 0004](docs/decisions/0004-prefill-decode-and-paged-interface.md))
 
 ## Grilling
 
@@ -119,7 +123,7 @@ Update the status as you go. Order per ADR 0001: M0 and M2 run on CPU, then M1 o
 
 | Milestone | Weeks | Gate | Status |
 | --- | --- | --- | --- |
-| M0 Foundations | 1–2 | Greedy output matches HF for 256 tokens on 20 prompts | Not started |
+| M0 Foundations | 1–2 | Greedy output matches HF for 256 tokens on 20 prompts | In progress (PR2) |
 | M1 Kernels | 3–4 | Every kernel tested, sanitizer-clean, profiled vs peak | Not started |
 | M2 Paged KV + batching | 5–6 | 32 concurrent requests, batch-invariant, no leaks | Not started |
 | M3 Serving API | 7–8 | OpenAI SDK streams end to end; TTFT/ITL measured | Not started |

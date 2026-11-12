@@ -22,6 +22,8 @@ Copy `0000-template.md` to `NNNN-short-title.md`, numbered in order. Claude draf
 | --- | --- | --- | --- |
 | [0001](0001-cpu-first-backend.md) | CPU-first backend trait; CUDA deferred until NVIDIA card; milestone reorder | Accepted | — |
 | [0002](0002-model-llama-3.2-1b.md) | Serve Llama 3.2 1B (base) | Accepted | [0001](../plans/0001-config-and-weights.md) |
+| [0003](0003-backend-trait-and-memory.md) | Op-level backend trait; backend owns KV bytes, engine owns bookkeeping; per-step activation arena; argmax-only sync | Accepted | [0002](../plans/0002-cpu-forward.md) |
+| [0004](0004-prefill-decode-and-paged-interface.md) | Separate prefill/decode paths over a paged-KV interface; batched prefill with context_len; last-token LM head | Accepted | [0002](../plans/0002-cpu-forward.md) |
 
 ## Known forks (starting point, not a complete list)
 
@@ -29,7 +31,7 @@ These are the big architectural forks from the original project plan. Each miles
 
 - **M0:** ~~model~~ (settled: ADR 0002); kernel language (CUDA C++ via nvcc vs Rust-on-GPU vs Triton); CUDA bindings (cudarc vs bindgen over the driver API)
 - **M1:** GEMM (cuBLAS vs own)
-- **M2:** KV block size; preemption (recompute vs swap)
-- **M3:** sampling location (GPU vs CPU)
+- **M2:** KV block size (placeholder 16, ADR 0004); prefill/decode mixing (ADR 0004 consequence); preemption (recompute vs swap)
+- **M3:** ~~sampling location~~ (settled: on the backend, ADR 0003)
 - **M4:** prefix cache structure (block hash vs radix tree); router cache state (shadow tree vs replica reports)
 - **M5:** CUDA graphs for decode

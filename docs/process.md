@@ -48,7 +48,7 @@ The owner writes **whole chunks, types included**. Data-structure and interface 
 
 **Claude writes:** workspace and build setup, weight and tokenizer loading, the CPU backend and forward pass (KV layout decided in the grill), the CUDA backend and cuBLAS wrappers, elementwise kernels, the axum/OpenAI API surface, the load generator, metrics, and the HF reference tools.
 
-**Always the owner's, every PR:** the back-of-envelope estimate before a measurement, and the write-up of the gap after it.
+**Napkin-math practice happens outside this project** (in chat, as study). In the project, Claude states the expected bound next to every GPU measurement (bytes or FLOPs, and the fraction of peak), tied to the design decision it informs, and the owner is never quizzed for estimates. The CPU backend is a correctness reference: its speed is recorded once for test-runtime planning, never optimized.
 
 ### How an owner chunk runs
 
