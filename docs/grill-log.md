@@ -2,6 +2,28 @@
 
 One entry per grilling session, newest first. Missed questions become tasks or ADRs before the next session.
 
+### 2026-11-11: code walkthrough, M0 PR2 commit 4 (`model.rs`, ADR 0004)
+
+- **Result:** Pass with follow-ups.
+- **Owner's review changes:**
+  - Reworded the `EngineConfig` docs (no "until M2 measures it" meta, "Maximum tokens processed in one step").
+  - New TODO convention: `TODO(M<n>): ...` names when it gets done, `TODO(Kamdyn)` if no milestone owns it. Applied in code, ADR 0004, CLAUDE.md and the `/explain` and `/adr` commands.
+  - `seqs` → `sequences`.
+  - A comment on the `positions`/`slots` match: same meaning in both modes, only attention differs.
+- **Taught from questions:**
+  - `upload` is where weights move onto the device: a no-op on CPU, a `cudaMalloc` plus copy on CUDA.
+  - Attention finds blocks through the metadata's block tables (commit 1). The pool is the bytes, the metadata is the map, and the CPU loop that walks the table is commit 5.
+  - `model.rs` is the recipe (what, in what order), not the math. It survives the GPU unchanged.
+- **Answered well:**
+  - Decode traffic: weights ≫ KV ≫ activations. Used bf16 sizes for an f32 build. The point that landed: weights are over 99% of bytes, which is why batching is nearly free until cached KV approaches the weights.
+- **Missed or shaky:**
+  - **Why `write_kv` runs before attention.** Partial: said the pool must be filled first, but pointed at `check_attention`, which checks layout, not contents. Answer: attention reads every key from the pool, including this step's own tokens. Running attention first reads stale slots (possibly another finished sequence's KV): wrong output, no error.
+  - **A long prompt arriving while 31 sequences decode.** Didn't know. After teaching, described our design as if it were chunked prefill and said chunking "doesn't buy anything". Answer: ours stalls every running user for the whole prefill (an ITL spike) but gives the newcomer the fastest TTFT. Chunked prefill buys smooth ITL and pays in the newcomer's TTFT.
+- **Claude's mistake:** asked the owner to size the logits tensor. That was an arithmetic question, against the agreed rule. The owner pushed back hard and was right. Quizzes are now "why is it built this way / what breaks otherwise" only.
+- **Follow-ups:**
+  - [ ] M2 scheduler grill: TTFT vs ITL, chunked prefill, the mixed step (ADR 0004 consequence). Already open from the design grill; now with the owner's specific confusion.
+  - [ ] `/gate M0`: "why is KV written before attention?" cold.
+
 ### 2026-11-10: code walkthrough, M0 PR2 commit 3 (`arena.rs`, `arena/ops.rs`)
 
 - **Result:** Pass with follow-ups. Took three sessions. After the first read the owner said "I read the code, but I still don't _really_ understand it", so Claude rebuilt the arena from scratch in stages (Vec per op → one buffer + offsets → rewind → closure scopes → lifetime branding → nesting → in-place ops → arena id), each stage fixing the previous stage's bug. That landed.
