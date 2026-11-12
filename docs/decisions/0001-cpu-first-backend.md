@@ -35,7 +35,7 @@ Consequences for the plan:
 
 No measurements yet; this is a sequencing decision, not a performance one. The supporting fact: M2's core logic (block ownership, refcounts, scheduling) is bookkeeping and does not depend on where the math runs.
 
-- `TODO(measure)`: CPU decode tok/s for the chosen model at batch 1. This sets how slow the M0 256-token × 20-prompt check will be.
+- ~~`TODO(measure)`: CPU decode tok/s for the chosen model at batch 1.~~ Measured 2026-11-07: **10 tok/s** (100 ms/token; ~49 GB/s of weight reads), prefill 149 tok/s on 238 tokens. The M0 gate test (20 prompts × 256 tokens) takes 7.6 min in release. See `docs/results.md`.
 
 ## Consequences
 

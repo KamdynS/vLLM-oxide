@@ -137,3 +137,4 @@ _Changed 2026-11-07 (process.md): no owner estimates for CPU performance. The CP
   - Model weights renamed to HF's `q_proj` … `down_proj`.
   - No one-letter locals or C-style abbreviations.
 - **Review process:** the PR is walked through in about 6 concept-sized commits in reading order, each annotated by the owner before the next.
+- **`BackendError` → `EngineError`, in its own `src/error.rs`** (owner review). Half its variants come from the arena, the model and the metadata, so the old name hid what it was. One enum for the crate is enough until a caller needs to match on which layer failed.

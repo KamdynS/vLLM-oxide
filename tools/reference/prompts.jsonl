@@ -1,0 +1,20 @@
+{"id": "p00_single_token", "text": ""}
+{"id": "p01_capital", "text": "The capital of France is"}
+{"id": "p02_count", "text": "1, 2, 3, 4, 5,"}
+{"id": "p03_block16", "text": "In a quiet village at the edge of the forest, there lived an old"}
+{"id": "p04_block17", "text": "In a quiet village at the edge of the dark forest, there lived an old"}
+{"id": "p05_code", "text": "def fibonacci(n):\n    \"\"\"Return the n-th Fibonacci number.\"\"\"\n"}
+{"id": "p06_rust", "text": "fn main() {\n    let v: Vec<u32> = (0..10).collect();\n"}
+{"id": "p07_recipe", "text": "To make a simple loaf of bread, you will need flour, water, salt and yeast. First,"}
+{"id": "p08_physics", "text": "Newton's second law states that the force acting on an object is equal to"}
+{"id": "p09_list", "text": "Here are five tips for better sleep:\n1."}
+{"id": "p10_french", "text": "Le petit prince est un livre écrit par"}
+{"id": "p11_math", "text": "Question: What is 17 multiplied by 23?\nAnswer:"}
+{"id": "p12_dialogue", "text": "Alice: Did you finish the report?\nBob: Almost, I just need to\nAlice:"}
+{"id": "p13_history", "text": "The Industrial Revolution began in Britain in the late 18th century and transformed the way goods were produced. Factories replaced small workshops, steam engines powered new machines, and cities grew rapidly as people moved from the countryside in search of work. Historians often point to several causes:"}
+{"id": "p14_json", "text": "{\"name\": \"Ada Lovelace\", \"born\": 1815, \"known_for\": ["}
+{"id": "p15_repetition", "text": "the the the the the the the the the the the the the the the the the the the the"}
+{"id": "p16_unicode", "text": "日本の首都は東京です。中国の首都は"}
+{"id": "p17_story_long", "text": "Once upon a time, in a kingdom far beyond the mountains, there was a young cartographer named Elin who had spent her whole life drawing maps of places she had never seen. Her father had been a sailor, and every evening he would describe the coastlines, the harbors, the islands shaped like sleeping animals, and the currents that could carry a ship halfway around the world in a single season. Elin listened, and she drew. When she was seventeen, her father did not come back from his last voyage. The harbor master said the ship had been lost in a storm near the Glass Islands, a place that appeared on none of the official charts. But Elin had drawn the Glass Islands a hundred times, exactly as her father had described them, and she knew something the harbor master did not: the islands were real, and the storm that took her father's ship came every year in the same month, from the same direction. She packed her maps, her compass, and a small bag of bread and dried fish, and she went down to the docks to find a captain foolish enough to take her there. The first three captains laughed at her. The fourth"}
+{"id": "p18_technical", "text": "A transformer language model processes a sequence of tokens. Each token is mapped to a vector by an embedding table, and the vectors pass through a stack of layers. Each layer applies self-attention, in which every position computes a weighted average of the value vectors of earlier positions, followed by a feed-forward network applied to each position independently. During inference, the keys and values computed for earlier tokens are stored in a cache so that"}
+{"id": "p19_whitespace", "text": "   leading spaces,\ttabs,\n\nand blank lines   "}
